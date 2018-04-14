@@ -20,20 +20,21 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 
-import pandas, sys, numpy, os, pyqtgraph as pg
-from Functions import *
-
+import numpy
+import pandas
+import pyqtgraph as pg
+from Functions import functions_Fil as fs
 
 def main(args):
     c = '/home/willy/PycharmProjects/Eq_1_MMO_29_03_2018'
     d = '/home/willy/PycharmProjects/FIL_Citrosuco_22_03_2018_7_5s_C'
     ym = pandas.read_csv('/home/willy/PycharmProjects/YMedios_Eq.txt', '\t', header=None)
     ymedio = numpy.array(ym)[:, 1]
-    x, m = Carrega_Arquivos(c, 1)
-    z = Boxcar(m[0][:, 0], 10)
-    s, f = Corte(x, z, 494.3046, 758.7687)
-    off = Offset(f)
-    t = Produto_Scalar(f, ymedio)
+    x, m = fs.Carrega_Arquivos(c, 1)
+    z = fs.Boxcar(m[0][:, 0], 10)
+    s, f = fs.Corte(x, z, 494.3046, 758.7687)
+    off = fs.Offset(f)
+    t = fs.Produto_Scalar(f, ymedio)
     print(t)
     print(s.shape, f.shape)
     pg.plot(s, off)

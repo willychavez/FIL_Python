@@ -87,11 +87,10 @@ def Offset(y, valor_y=0):
 def Produto_Scalar(y, yref):
 	norm_ym = numpy.linalg.norm(yref)
 	norm_y = numpy.linalg.norm(y)
-	print(y.shape, yref.shape)
-	if y.shape[0] == yref.shape[0]:
+	if y.shape[0] == yref.shape[0] or y.shape[1] == yref.shape[1]:
 		costheta = y.dot(yref.transpose()) / (norm_y * norm_ym)
 		return costheta
-	else:
+	elif y.shape[0] == yref.shape[1] or y.shape[1] == yref.shape[0]:
 		costheta = y.dot(yref) / (norm_y * norm_ym)
 		return costheta
 
