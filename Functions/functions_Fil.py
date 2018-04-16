@@ -66,11 +66,9 @@ def Boxcar(y, n=1):
 		raise ValueError('não é possível boxcar de zero e numero negativo')
 
 
-def Corte(x, y, x1, x2):
+def Corte(x, x1, x2):
 	ind = numpy.nonzero((x > x1) & (x < x2))
-	X = x[ind]
-	Y = y[ind]
-	return X, Y
+	return ind
 
 
 def Offset(y, valor_y=0):
