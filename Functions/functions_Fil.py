@@ -93,3 +93,7 @@ def Produto_Scalar(y, yref):
 		return costheta
 
 
+def Normaliza(y, x=None):
+	Y = numpy.zeros_like(y)
+	Y = y/numpy.trapz(y, x)
+	return Y

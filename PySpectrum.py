@@ -20,18 +20,22 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 
+import os
 import numpy
 import pandas
 import pyqtgraph as pg
 from Functions import functions_Fil as fs
+from Functions import gera_arff as ga
+#from Functions import *
 
 def main(args):
+    nome = 'teste.arff'
+    w = '/home/willy/PycharmProjects/weka'
     c = '/home/willy/PycharmProjects/Eq_1_MMO_29_03_2018'
     d = '/home/willy/PycharmProjects/FIL_Citrosuco_22_03_2018_7_5s_C'
     ym = pandas.read_csv('/home/willy/PycharmProjects/YMedios_Eq.txt', '\t', header=None)
     ymedio = numpy.array(ym)[:, 1]
     x, m = fs.Carrega_Arquivos(c, 1)
-    
     
     ind = fs.Corte(x, 494.3046, 758.7687)
     x = x[ind]
@@ -40,23 +44,25 @@ def main(args):
         for i in range(m[j].shape[1]):
             if i == 0:
                 y_temp = m[j][:, i]
-                yy = fs.Offset(fs.Boxcar(y_temp, 20)[ind])
+                yy = fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 20)[ind]),x)
             else:
                 y_temp = m[j][:, i]
-                yy = numpy.column_stack((yy, fs.Offset(fs.Boxcar(y_temp, 20)[ind])))
+                yy = numpy.column_stack((yy, fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 20)[ind]),x)))
         y.append(yy)
     print(y[0].shape)
 
     
-    # s, f = fs.Corte(x, z, 494.3046, 758.7687)
-    # off = fs.Offset(f)
-    # t = fs.Produto_Scalar(f, ymedio)
+    # ga.Gera_Arff(x,y,'%s/''%s' % (w, nome))
+    
+    # s, f = Corte(x, z, 494.3046, 758.7687)
+    # off = Offset(f)
+    # t = Produto_Scalar(f, ymedio)
     # print(t)
     # print(s.shape, f.shape)
     grafico = pg.plot()
     grafico.addLegend()
     for i in range(y[0].shape[1]):
-        grafico.plot(x, y[0][:, i],  pen=(1,225))
+        grafico.plot(x, y[0][:, i],  pen=(1, 225))
     # grafico.plot(x, y[0][:, 224], name='224', pen=(2,2))
     grafico.setLabels(title='Fluorescência', left='Intensidade', bottom='Comprimento de onda')
     pg.QtGui.QApplication.exec_()
