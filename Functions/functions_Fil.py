@@ -26,7 +26,7 @@ import pandas
 import numpy
 
 
-
+# Carrega arquivos de acordo com uma configuração de pastas retornando uma matrix onde as colunas são as intensidades dos espectros
 def Carrega_Arquivos(caminho, inicio_linea):
 	pastas = os.listdir('%s' % caminho)
 	pastas.sort()
@@ -53,7 +53,7 @@ def Carrega_Arquivos(caminho, inicio_linea):
 		matrix.append(matrix_y)
 	return x, matrix
 
-
+# Filtro passa baixa (elimina altas frequencias)
 def Boxcar(y, n=1):
 	if n == 1:
 		return y
@@ -65,12 +65,12 @@ def Boxcar(y, n=1):
 	else:
 		raise ValueError('não é possível boxcar de zero e numero negativo')
 
-
+# Delimita a região do espectro onde se quer trabalhar
 def Corte(x, x1, x2):
 	ind = numpy.nonzero((x > x1) & (x < x2))
 	return ind
 
-
+# Função encarregada de remover offset pegando um valor minimo do espectro automaticamente ou fornecendo um valor minimo
 def Offset(y, valor_y=0):
 	Y = numpy.zeros_like(y)
 	if valor_y > 0:
