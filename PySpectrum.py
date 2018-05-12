@@ -33,111 +33,127 @@ pg.setConfigOption('foreground', 'k')
 #from Functions import *
 
 def main(args):
-    nome = 'FIL_08_05_2018.arff'
-    w = '/home/willy/Documents/Av_temporal/08_05_2018/Equipamentos/weka'
-    wf = '/home/willy/Documents/Av_temporal/08_05_2018/Fil/weka'
+    fc = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Folhas'
+    w = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/weka'
+    img = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Imagens'
+    cy1 = '/home/willy/PycharmProjects/YMedios_Eq.txt'
+    cy3 = "/home/willy/PycharmProjects/YMedios_FIL.txt"
+    nome1 = 'Eq_1_08_05_2018.arff'
+    nome2 = 'Eq_2_08_05_2018.arff'
+    nome3 = 'FIL_08_05_2018.arff'
+    c1 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Equipamentos/Eq_1_MMO_08_05_2018'
+    c2 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Equipamentos/Eq_2_MMO_08_05_2018'
+    c3 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Fil/FIL_Citrosuco_08_05_2018'
+
+    cym = cy1
+    indice = 1
+    nome = nome1
+    caminho = c1
+    nomeimg1 = "1Sadia"
+    nomeimg2 = "1Assintomatica"
+    nomeimg3 = "1Sintomatica"
     
-    c = '/home/willy/Documents/Av_temporal/08_05_2018/Equipamentos/Eq_1_MMO_08_05_2018'
-    d = '/home/willy/Documents/Av_temporal/08_05_2018/Fil/FIL_Citrosuco_08_05_2018'
+
+
+    ym = pandas.read_csv('%s' % cym, '\t', header=None)
+    ymedio = numpy.array(ym)
+    print(ymedio.shape)
     
-    ie = '/home/willy/Documents/Av_temporal/08_05_2018/Equipamentos/Imagens'
-    If = '/home/willy/Documents/Av_temporal/08_05_2018/Fil/Imagens'
-    
-    ym = pandas.read_csv('/home/willy/PycharmProjects/YMedios_Eq.txt', '\t', header=None)
-    ymedio = numpy.array(ym)[:, 1]
-    x, m = fs.Carrega_Arquivos(d, 1)
-    
+    x, m = fs.Carrega_Arquivos(caminho, 1)
+
     #Corte Equipamento1
     x1 = 494.3046
     x2 = 758.7687
-    
-    #Corte Equipamento2
-    x3 = 492.1631
-    x4 = 758.7687
-    
+
     #Cortes FIL
-    x5 = 444.2869
-    x6 = 819.9622
+    x3 = 444.2869
+    x4 = 819.9622
     
-    ind = fs.Corte(x, x5, x6)
-    
+    if indice == 1:
+        ind = fs.Corte(x, x1, x2)
+    else:
+        ind = fs.Corte(x, x3, x4)
+
     x = x[ind]
     y = []
     for j in range(len(m)):
         for i in range(m[j].shape[1]):
             if i == 0:
                 y_temp = m[j][:, i]
-                yy = fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 20)[ind]), x)
+                yy = fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 10)[ind]), x)
             else:
                 y_temp = m[j][:, i]
-                yy = numpy.column_stack((yy, fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 20)[ind]), x)))
+                yy = numpy.column_stack((yy, fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 10)[ind]), x)))
         y.append(yy)
     print(y[0].shape)
+    
+    folhas = fs.Identifica(fc)
+    
+    #Carrega identificação das folhas
+    Y = [[]] * len(y)
+    for i in range(len(y)):
+        Y[i] = numpy.vstack((folhas[i], y[i]))
 
+    print(Y[0].shape, Y[1].shape, Y[2].shape)
     
-    ga.Gera_Arff(x,y,'%s/''%s' % (wf, nome))
     
-    # s, f = Corte(x, z, 494.3046, 758.7687
-    # off = Offset(f)
-    # t = Produto_Scalar(f, ymedio)
-    # print(t)
-    # print(s.shape, f.shape)
+    #remove outliers
+    for i in range(len(y)):
+        cont = 0
+        j = 0
+        while j < y[i].shape[1]:
+            cosseno_tetta = fs.Produto_Scalar(y[i][:, j], ymedio[:, i])
+            if cosseno_tetta < 0.899:
+                if cont == 0:
+                    Y[i] = numpy.delete(Y[i], j, 1)
+                    cont = 1
+                else:
+                    Y[i] = numpy.delete(Y[i], (j - cont), 1)
+                    cont += 1
+            j += 1
+
+    print(Y[0].shape, Y[1].shape, Y[2].shape)
+    
+    #Gera arquivo.arff
+    ga.Gera_Arff_Ind(x, Y, '%s/''%s' % (w, '%s' % nome))
+
+
     grafico = pg.plot()
     #grafico.addLegend()
-    for i in range(y[1].shape[1]):
-        grafico.plot(x, y[1][:, i], pen=(i, y[1].shape[1]))
+    for i in range(Y[1].shape[1]):
+        grafico.plot(x, Y[1][2:, i], pen=(i, Y[1].shape[1]))
     grafico.setTitle('Sadia')
     grafico.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
-    # grafico.setLabel('left', "Intensidade", units='u.a')
-    # grafico.setLabel('bottom', "Comprimento de Onda", units='nm')
-    # pg.QtGui.QApplication.exec_()
-    # exporter = pg.exporters.ImageExporter(grafico.plotItem)
-    # exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
-    # exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    # exporter.export('%s/''%s' % (ie, 'Sadia2.png'))
-    
+
     grafico1 = pg.plot()
     #grafico1.addLegend()
-    for i in range(y[0].shape[1]):
-        grafico1.plot(x, y[0][:, i], pen=(i, y[0].shape[1]))
+    for i in range(Y[0].shape[1]):
+        grafico1.plot(x, Y[0][2:, i], pen=(i, Y[0].shape[1]))
     grafico1.setTitle('Assintomatica')
     grafico1.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
-    # grafico1.setLabel('left', "Intensidade", units='arb. units')
-    # grafico1.setLabel('bottom', "Comprimento de Onda", units='nm')
-    # pg.QtGui.QApplication.exec_()
-    # exporter = pg.exporters.ImageExporter(grafico1.plotItem)
-    # exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
-    # exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    # exporter.export('%s/''%s' % (ie, 'Assintomatica2.png'))
 
     grafico2 = pg.plot()
     #grafico2.addLegend()
-    for i in range(y[2].shape[1]):
-        grafico2.plot(x, y[2][:, i],pen=(i, y[2].shape[1]))
+    for i in range(Y[2].shape[1]):
+        grafico2.plot(x, Y[2][2:, i], pen=(i, Y[2].shape[1]))
     grafico2.setTitle('Sintomatica')
     grafico2.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
-    # grafico2.setLabel('left', "Intensidade", units='u.a')
-    # grafico2.setLabel('bottom', "Comprimento de Onda", units='nm')
-    # pg.QtGui.QApplication.exec_()
-    # exporter = pg.exporters.ImageExporter(grafico2.plotItem)
-    # exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
-    # exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    # exporter.export('%s/''%s' % (ie, 'Sintomatica2.png'))
 
     pg.QtGui.QApplication.exec_()
     exporter = pg.exporters.ImageExporter(grafico.plotItem)
     exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
     exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    exporter.export('%s/''%s' % (If, 'Sadia.png'))
+    exporter.export('%s/''%s' % (img, '%s.png' % nomeimg1))
     exporter = pg.exporters.ImageExporter(grafico1.plotItem)
     exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
     exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    exporter.export('%s/''%s' % (If, 'Assintomatica.png'))
+    exporter.export('%s/''%s' % (img, '%s.png' % nomeimg2))
     exporter = pg.exporters.ImageExporter(grafico2.plotItem)
     exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
     exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    exporter.export('%s/''%s' % (If, 'Sintomatica.png'))
+    exporter.export('%s/''%s' % (img, '%s.png' % nomeimg3))
 
+    # exporter.params['width'] = 1024
     # grafico.plot(x, y[0][:, 224], name='224', pen=(2,2))
     #grafico1.setLabels(title='Fluorescência Assintomatica', left='Intensidade', bottom='Comprimento de onda')
     # grafico.setLabel('left', "Intensidade", units='arb. units')

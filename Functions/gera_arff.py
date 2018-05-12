@@ -21,11 +21,11 @@
 #
 import sys; sys.dont_write_bytecode = True # não gera arquivos pyc
 
+#gera arquivo .arff sem identificação dos espectros
 def Gera_Arff(x,y,nome_aquivo):
 	arq = open('%s' % nome_aquivo, 'w')
 	arq.write('@RELATION Diagnostico \n')
 	arq.write('\n')
-	# o primeiro atributo sera o nome da folha
 	for i in range(len(x)):
 		arq.write('@ATTRIBUTE %s  NUMERIC \n' % x[i])
 	
@@ -35,17 +35,49 @@ def Gera_Arff(x,y,nome_aquivo):
 	
 	for l in range(y[1].shape[1]):
 		for j in range(y[1].shape[0]):
-			arq.write('%.5f,' % y[1][j, l])
+			arq.write('%f,' % y[1][j, l])
 		arq.write('Sadia\n')
 		
 	for l in range(y[0].shape[1]):
 		for j in range(y[0].shape[0]):
-			arq.write('%.5f,' % y[0][j, l])
+			arq.write('%f,' % y[0][j, l])
 		arq.write('Assintomatica\n')
 
 	for l in range(y[2].shape[1]):
 		for j in range(y[2].shape[0]):
-			arq.write('%.5f,' % y[2][j, l])
+			arq.write('%f,' % y[2][j, l])
+		arq.write('Sintomatica\n')
+	
+	arq.close()
+
+#gera arquivo .arff com identificação dos espectros relacionando a folha e arvore a qual pertece
+def Gera_Arff_Ind(x, y, nome_aquivo):
+	arq = open('%s' % nome_aquivo, 'w')
+	arq.write('@RELATION Diagnostico \n')
+	arq.write('\n')
+	# Os primeiros dois atributos seram a identificação dos espectros
+	arq.write('@ATTRIBUTE Planta string \n')
+	arq.write('@ATTRIBUTE Folha string \n')
+	for i in range(len(x)):
+		arq.write('@ATTRIBUTE %s  NUMERIC \n' % x[i])
+	
+	arq.write('@ATTRIBUTE class {Sadia,Assintomatica,Sintomatica} \n')
+	arq.write('\n')
+	arq.write('@DATA \n')
+	
+	for l in range(y[1].shape[1]):
+		for j in range(y[1].shape[0]):
+			arq.write('%f,' % y[1][j, l])
+		arq.write('Sadia\n')
+	
+	for l in range(y[0].shape[1]):
+		for j in range(y[0].shape[0]):
+			arq.write('%f,' % y[0][j, l])
+		arq.write('Assintomatica\n')
+	
+	for l in range(y[2].shape[1]):
+		for j in range(y[2].shape[0]):
+			arq.write('%f,' % y[2][j, l])
 		arq.write('Sintomatica\n')
 	
 	arq.close()

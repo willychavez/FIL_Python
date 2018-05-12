@@ -24,6 +24,7 @@ import sys; sys.dont_write_bytecode = True # não gera arquivos pyc
 import os
 import pandas
 import numpy
+import glob
 
 
 # Carrega arquivos de acordo com uma configuração de pastas retornando uma matrix onde as colunas são as intensidades dos espectros
@@ -31,7 +32,6 @@ def Carrega_Arquivos(caminho, inicio_linea):
 	pastas = os.listdir('%s' % caminho)
 	pastas.sort()
 	matrix = []
-	
 	for i in pastas:
 		amostras = os.listdir('%s/%s' % (caminho, i))
 		amostras.sort()
@@ -81,7 +81,7 @@ def Offset(y, valor_y=0):
 		Y = y - m
 		return Y
 
-
+# função que realiza o produto scalar entre dois vetores retornando o cosseno theta
 def Produto_Scalar(y, yref):
 	norm_ym = numpy.linalg.norm(yref)
 	norm_y = numpy.linalg.norm(y)
@@ -92,8 +92,62 @@ def Produto_Scalar(y, yref):
 		costheta = y.dot(yref) / (norm_y * norm_ym)
 		return costheta
 
-
+# função que normaliza utlizandando a area embaixo da curva
 def Normaliza(y, x=None):
 	Y = numpy.zeros_like(y)
 	Y = y/numpy.trapz(y, x)
 	return Y
+
+# Identifica as folhas
+def Identifica(caminho):
+	amostras=os.listdir('%s' % caminho)
+	amostras.sort()
+	matrix = []
+	folhas = []
+	nf = []
+	chave = 0
+	for i in amostras:
+		Dados = pandas.read_csv('%s/%s' % (caminho, i), sep='\t',  header=None)
+		if chave == 0:
+			matrix = numpy.array(Dados)
+			chave = 1
+		else:
+			matrix = numpy.column_stack((matrix, numpy.array(Dados)))
+	for i in range(len(matrix[1])):
+		for j in range(len(matrix[:, i])):
+			temp = numpy.vstack(([j + 1]*matrix[j, i], numpy.arange(1, (matrix[j, i] + 1))))
+			if j == 0:
+				nf = temp
+			else:
+				nf = numpy.column_stack((nf, temp))
+		folhas.append(nf)
+	return folhas
+
+def Identifica_Agrup(caminho):
+	pastas = os.listdir('%s' % caminho)
+	pastas.sort()
+	matrix = []
+	folhas = []
+	nf = []
+	for i in pastas:
+		amostras = os.listdir('%s/%s' % (caminho, i))
+		amostras.sort()
+		chave = 0
+		for j in amostras:
+			Dados = pandas.read_csv('%s/%s/%s' % (caminho, i, j), sep='\t',  header=None)
+			if chave == 0:
+				matrix_y = numpy.array(Dados)
+				chave = 1
+			else:
+				matrix_y = numpy.vstack((matrix_y, numpy.array(Dados)))
+		matrix.append(matrix_y)
+	for i in range(len(matrix)):
+		for j in range(len(matrix[i])):
+			temp = numpy.vstack(([j + 1]*matrix[i][j, 0], numpy.arange(1, (matrix[i][j, 0] + 1))))
+			if j == 0:
+				nf = temp
+			else:
+				nf = numpy.column_stack((nf, temp))
+		folhas.append(nf)
+	return folhas
+
