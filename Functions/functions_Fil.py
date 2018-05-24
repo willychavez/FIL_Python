@@ -176,6 +176,25 @@ def Predicao_python(conj_test, modelo, referencia, n_component):
 	return pred
 
 
+def matrix_conf(matrix):
+	Assintomatica = 0
+	Sadia = 0
+	Sintomatica = 0
+	resultado = [[]] * len(matrix)
+	for i in range(len(matrix)):
+		for j in range(matrix[i].shape[0]):
+			if matrix[i][j, 0] > matrix[i][j, 1] and matrix[i][j, 0] > matrix[i][j, 2]:
+				Assintomatica += 1
+			elif matrix[i][j, 1] > matrix[i][j, 0] and matrix[i][j, 1] > matrix[i][j, 2]:
+				Sadia += 1
+			elif matrix[i][j, 2] > matrix[i][j, 0] and matrix[i][j, 2] > matrix[i][j, 1]:
+				Sintomatica += 1
+		resultado[i] = numpy.column_stack((Sadia, Assintomatica, Sintomatica))
+		Assintomatica = 0
+		Sadia = 0
+		Sintomatica = 0
+	return resultado
+
 #Constroi o beta apartir de um conjunto de teinamento para depois jogar na função pedriction
 def beta(modelo, referencia, n_component):
 	pls = PLSRegression(n_component, scale=False).fit(modelo, referencia)
@@ -221,22 +240,3 @@ def Prediction(beta, amostras):
 		Sadia = 0
 		Sintomatica = 0
 	return matrix, resultado
-
-def matrix_conf(matrix):
-	Assintomatica = 0
-	Sadia = 0
-	Sintomatica = 0
-	resultado = [[]] * len(matrix)
-	for i in range(len(matrix)):
-		for j in range(matrix[i].shape[0]):
-			if matrix[i][j, 0] > matrix[i][j, 1] and matrix[i][j, 0] > matrix[i][j, 2]:
-				Assintomatica += 1
-			elif matrix[i][j, 1] > matrix[i][j, 0] and matrix[i][j, 1] > matrix[i][j, 2]:
-				Sadia += 1
-			elif matrix[i][j, 2] > matrix[i][j, 0] and matrix[i][j, 2] > matrix[i][j, 1]:
-				Sintomatica += 1
-		resultado[i] = numpy.column_stack((Sadia, Assintomatica, Sintomatica))
-		Assintomatica = 0
-		Sadia = 0
-		Sintomatica = 0
-	return resultado
