@@ -33,139 +33,233 @@ pg.setConfigOption('foreground', 'k')
 #from Functions import *
 
 def main(args):
-    fc = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Folhas'
-    w = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/weka'
-    img = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Imagens'
-    cy1 = '/home/willy/PycharmProjects/YMedios_Eq.txt'
-    cy3 = "/home/willy/PycharmProjects/YMedios_FIL.txt"
-    nome1 = 'Eq_1_08_05_2018.arff'
-    nome2 = 'Eq_2_08_05_2018.arff'
-    nome3 = 'FIL_08_05_2018.arff'
-    c1 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Equipamentos/Eq_1_MMO_08_05_2018'
-    c2 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Equipamentos/Eq_2_MMO_08_05_2018'
-    c3 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/08_05_2018/Fil/FIL_Citrosuco_08_05_2018'
+	# fc = '/home/willy/Documents/Novo_Conj_Dados/Mensal/12_04_2018/Folhas'
+	fc = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/folhas_p'
+	w = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/Calculo_Beta2/weka'
+	img = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/Calculo_Beta2/Imagens'
+	cy1 = '/home/willy/PycharmProjects/YMedios_Eq.txt'
+	cy3 = "/home/willy/PycharmProjects/YMedios_FIL.txt"
+	nome1 = 'EQ1'
+	nome2 = 'EQ2'
+	nome3 = 'FIL'
+	sheet1 = 'Teste_EQ1'
+	sheet2 = 'Teste_EQ2'
+	sheet3 = 'Teste_FIL'
+	# sheet1 = 'Beta_EQ1'
+	# sheet2 = 'Beta_EQ2'
+	# sheet3 = 'Beta_FIL'
+	# c1 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/12_04_2018/Equipamentos/Eq_1_MMO_12_04_2018'
+	# c2 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/29_03_2018/Equipamentos/Eq_2_MMO_29_03_2018'
+	# c3 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/29_03_2018/Fil/FIL_Citrosuco_29_03_2018'
+	#
 
-    cym = cy1
-    indice = 1
-    nome = nome1
-    caminho = c1
-    nomeimg1 = "1Sadia"
-    nomeimg2 = "1Assintomatica"
-    nomeimg3 = "1Sintomatica"
-    
-
-
-    ym = pandas.read_csv('%s' % cym, '\t', header=None)
-    ymedio = numpy.array(ym)
-    print(ymedio.shape)
-    
-    x, m = fs.Carrega_Arquivos(caminho, 1)
-
-    #Corte Equipamento1
-    x1 = 494.3046
-    x2 = 758.7687
-
-    #Cortes FIL
-    x3 = 444.2869
-    x4 = 819.9622
-    
-    if indice == 1:
-        ind = fs.Corte(x, x1, x2)
-    else:
-        ind = fs.Corte(x, x3, x4)
-
-    x = x[ind]
-    y = []
-    for j in range(len(m)):
-        for i in range(m[j].shape[1]):
-            if i == 0:
-                y_temp = m[j][:, i]
-                yy = fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 10)[ind]), x)
-            else:
-                y_temp = m[j][:, i]
-                yy = numpy.column_stack((yy, fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 10)[ind]), x)))
-        y.append(yy)
-    print(y[0].shape)
-    
-    folhas = fs.Identifica(fc)
-    
-    #Carrega identificação das folhas
-    Y = [[]] * len(y)
-    for i in range(len(y)):
-        Y[i] = numpy.vstack((folhas[i], y[i]))
-
-    print(Y[0].shape, Y[1].shape, Y[2].shape)
-    
-    
-    #remove outliers
-    for i in range(len(y)):
-        cont = 0
-        j = 0
-        while j < y[i].shape[1]:
-            cosseno_tetta = fs.Produto_Scalar(y[i][:, j], ymedio[:, i])
-            if cosseno_tetta < 0.899:
-                if cont == 0:
-                    Y[i] = numpy.delete(Y[i], j, 1)
-                    cont = 1
-                else:
-                    Y[i] = numpy.delete(Y[i], (j - cont), 1)
-                    cont += 1
-            j += 1
-
-    print(Y[0].shape, Y[1].shape, Y[2].shape)
-    
-    #Gera arquivo.arff
-    ga.Gera_Arff_Ind(x, Y, '%s/''%s' % (w, '%s' % nome))
+	c1 = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/EQ1_p'
+	c2 = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/EQ2_p'
+	c3 = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/FIL_p'
 
 
-    grafico = pg.plot()
-    #grafico.addLegend()
-    for i in range(Y[1].shape[1]):
-        grafico.plot(x, Y[1][2:, i], pen=(i, Y[1].shape[1]))
-    grafico.setTitle('Sadia')
-    grafico.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
+	cym = cy3
+	indice = 3
+	
+	Sheet = sheet3
+	nome = nome3
+	caminho = c3
+	nomeimg1 = "fSadia"
+	nomeimg2 = "fAssintomatica"
+	nomeimg3 = "fSintomatica"
+	
+	ind_beta = 0
+	
+	
+	ym = pandas.read_csv('%s' % cym, '\t', header=None)
+	ymedio = numpy.array(ym)
+	# print(ymedio, ym)
+	
+	x, m = fs.Carrega_Arquivos(caminho, 1)
 
-    grafico1 = pg.plot()
-    #grafico1.addLegend()
-    for i in range(Y[0].shape[1]):
-        grafico1.plot(x, Y[0][2:, i], pen=(i, Y[0].shape[1]))
-    grafico1.setTitle('Assintomatica')
-    grafico1.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
+	#Corte Equipamento1
+	x1 = 494.3046
+	x2 = 758.7687
 
-    grafico2 = pg.plot()
-    #grafico2.addLegend()
-    for i in range(Y[2].shape[1]):
-        grafico2.plot(x, Y[2][2:, i], pen=(i, Y[2].shape[1]))
-    grafico2.setTitle('Sintomatica')
-    grafico2.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
+	#Cortes FIL
+	x3 = 444.2869
+	x4 = 819.9622
 
-    pg.QtGui.QApplication.exec_()
-    exporter = pg.exporters.ImageExporter(grafico.plotItem)
-    exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
-    exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    exporter.export('%s/''%s' % (img, '%s.png' % nomeimg1))
-    exporter = pg.exporters.ImageExporter(grafico1.plotItem)
-    exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
-    exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    exporter.export('%s/''%s' % (img, '%s.png' % nomeimg2))
-    exporter = pg.exporters.ImageExporter(grafico2.plotItem)
-    exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
-    exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
-    exporter.export('%s/''%s' % (img, '%s.png' % nomeimg3))
+	if indice == 1:
+		ind = fs.Corte(x, x1, x2)
+	else:
+		ind = fs.Corte(x, x3, x4)
 
-    # exporter.params['width'] = 1024
-    # grafico.plot(x, y[0][:, 224], name='224', pen=(2,2))
-    #grafico1.setLabels(title='Fluorescência Assintomatica', left='Intensidade', bottom='Comprimento de onda')
-    # grafico.setLabel('left', "Intensidade", units='arb. units')
-    # grafico.setLabel('bottom', "Comprimento de Onda", units='nm')
-    # A = m[0]
-    # B = m[1]
-    # C = m[2]
-    # print(A.shape)
-    # print(B.shape)
-    # print(C.shape)
-    return 0
+	x = x[ind]
+	y = []
+	for j in range(len(m)):
+		for i in range(m[j].shape[1]):
+			if i == 0:
+				y_temp = m[j][:, i]
+				yy = fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 10)[ind]), x)
+			else:
+				y_temp = m[j][:, i]
+				yy = numpy.column_stack((yy, fs.Normaliza(fs.Offset(fs.Boxcar(y_temp, 10)[ind]), x)))
+		y.append(yy)
+	# print(y[0].shape)
+
+	folhas = fs.Identifica_Agrup(fc)
+	# print(folhas[0].shape, folhas[1].shape, folhas[2].shape)
+
+	#Carrega identificação das folhas
+	Y = [[]] * len(y)
+	for i in range(len(y)):
+		Y[i] = numpy.vstack((folhas[i], y[i]))
+
+	# print(Y[0].shape, Y[1].shape, Y[2].shape)
+
+	# #remove outliers
+	# for i in range(len(y)):
+	# 	cont = 0
+	# 	j = 0
+	# 	while j < y[i].shape[1]:
+	# 		cosseno_tetta = fs.Produto_Scalar(y[i][:, j], ymedio[:, i])
+	# 		if cosseno_tetta < 0.899:
+	# 			if cont == 0:
+	# 				Y[i] = numpy.delete(Y[i], j, 1)
+	# 				cont = 1
+	# 			else:
+	# 				Y[i] = numpy.delete(Y[i], (j - cont), 1)
+	# 				cont += 1
+	# 		j += 1
+	#
+	folhas_beta = fs.importa_excel(Sheet)
+	# print(folhas_beta[0].shape, folhas_beta[2].shape, folhas_beta[2].shape)
+
+	#seleciona espectros que vão compor o beta
+	n = []
+	for k in range(len(folhas)):
+		for j in range(folhas_beta[k].shape[1]):
+			for i in range(folhas[k].shape[1]):
+				if folhas[k][0, i] == folhas_beta[k][0, j] and folhas[k][1, i] == folhas_beta[k][1, j]:
+					n.append(i)
+		Y[k] = Y[k][:, numpy.array(n)]
+		n = []
+	print(Y[0].shape, Y[1].shape, Y[2].shape)
+
+	# dados = numpy.vstack((Y[0][2:, :].T, Y[1][2:, :].T, Y[2][2:, :].T))
+	# numpy.savetxt('%s/''%s' % (img, '%s.txt' % nome), dados, delimiter='\t')
+
+	#Gera arquivo.arff
+	ga.Gera_Arff_Ind(x, Y, '%s/''%s' % (w, '%s.arff' % nome))
+
+
+	grafico = pg.plot()
+	#grafico.addLegend()
+	for i in range(Y[1].shape[1]):
+		grafico.plot(x, Y[1][2:, i], pen=(i, Y[1].shape[1]))
+	grafico.setTitle('Sadia')
+	grafico.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
+
+	grafico1 = pg.plot()
+	#grafico1.addLegend()
+	for i in range(Y[0].shape[1]):
+		grafico1.plot(x, Y[0][2:, i], pen=(i, Y[0].shape[1]))
+	grafico1.setTitle('Assintomatica')
+	grafico1.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
+
+	grafico2 = pg.plot()
+	#grafico2.addLegend()
+	for i in range(Y[2].shape[1]):
+		grafico2.plot(x, Y[2][2:, i], pen=(i, Y[2].shape[1]))
+	grafico2.setTitle('Sintomatica')
+	grafico2.setLabels(left='Intensidade (u.a.)', bottom='Comprimento de Onda (nm)')
+
+	pg.QtGui.QApplication.exec_()
+	exporter = pg.exporters.ImageExporter(grafico.plotItem)
+	exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
+	exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
+	exporter.export('%s/''%s' % (img, '%s.png' % nomeimg1))
+	exporter = pg.exporters.ImageExporter(grafico1.plotItem)
+	exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
+	exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
+	exporter.export('%s/''%s' % (img, '%s.png' % nomeimg2))
+	exporter = pg.exporters.ImageExporter(grafico2.plotItem)
+	exporter.params.param('width').setValue(1024, blockSignal=exporter.widthChanged)
+	exporter.params.param('height').setValue(768, blockSignal=exporter.heightChanged)
+	exporter.export('%s/''%s' % (img, '%s.png' % nomeimg3))
+
+	
+	
+
+	# beta = fs.importa_dados('/home/willy/Desktop/Betas2/EQ2')
+	# print(beta[0].shape, beta[1].shape, beta[2].shape)
+	# # print(beta[0], beta[1], beta[2])
+	#
+	# teste, resultado = fs.Prediction(beta, Y)
+	# # print(teste[0], teste[1], teste[2])
+	# print(resultado[1], resultado[0], resultado[2])
+	# print(Y[1].shape[0], Y[0].shape[0], Y[2].shape[0])
+	# print(((resultado[1]/Y[1].shape[0])*100).round(2), ((resultado[0]/Y[0].shape[0])*100).round(2), ((resultado[2]/Y[2].shape[0])*100).round(2))
+
+	#
+	# amostras = fs.importa_dados('/home/willy/Desktop/Betas/amostras')
+	# N = amostras[ind_beta].shape[0]//3
+	# # print(amostras[ind_beta].shape[0]//3)
+	# refencia = [[]]*3
+	# refencia[0] = numpy.hstack(([1]*N, [0]*N, [0]*N))
+	# refencia[1] = numpy.hstack(([0]*N, [1]*N, [0]*N))
+	# refencia[2] = numpy.hstack(([0]*N, [0]*N, [1]*N))
+	# # print(refencia[0].shape, amostras[ind_beta].shape)
+	#
+	#
+	# #cria os betas
+	# beta2 = []
+	# for i in range(len(refencia)):
+	# 	Beta_temp2 = fs.beta(amostras[ind_beta], refencia[i], 7)
+	# 	beta2.append(Beta_temp2)
+	# # print(beta2[0].shape, beta2[1].shape, beta2[2].shape)
+	#
+	# teste, resultado2 = fs.Prediction(beta2, Y)
+	# # print(teste[0], teste[1], teste[2])
+	# print(resultado2[1], resultado2[0], resultado2[2])
+	# # print(Y[1].shape[0], Y[0].shape[0], Y[2].shape[0])
+	# print(((resultado2[1]/Y[1].shape[0])*100).round(2), ((resultado2[0]/Y[0].shape[0])*100).round(2), ((resultado2[2]/Y[2].shape[0])*100).round(2))
+	#
+	#
+	#
+	# for i in range(len(Y)):
+	# 	Y[i] = Y[i][:, 1:]
+	# 	# Y[i] = Y[i].T
+	#
+	# # print(Y[0].shape, Y[1].shape, Y[2].shape)
+	# print('---------------')
+	#
+	# beta = []
+	#
+	# for i in range(len(Y)):
+	# 	for j in range(len(refencia)):
+	# 		if j == 0:
+	# 			pred = fs.Predicao_python(Y[i], amostras[ind_beta], refencia[j], 7)
+	# 		else:
+	# 			pred = numpy.column_stack((pred, fs.Predicao_python(Y[i], amostras[ind_beta], refencia[j], 7)))
+	# 	beta.append(pred)
+	#
+	# resultado = fs.matrix_conf(beta)
+	# print(resultado[1], resultado[0], resultado[2])
+	# print(((resultado[1] / Y[1].shape[0]) * 100).round(2), ((resultado[0] / Y[0].shape[0]) * 100).round(2), ((resultado[2] / Y[2].shape[0]) * 100).round(2))
+	# # print(beta[0][0].shape, beta[1][1].shape, beta[2][2].shape)
+	# # # print(beta[0], beta[1], beta[2])
+	# # print(len(beta))
+	# # print(beta)
+	#
+	
+	
+	# beta = Y[1][2:, :].T #numpy.vstack((Y[0][2:, :].T, Y[1][2:, :].T, Y[2][2:, :].T))
+	# numpy.savetxt('%s/''%s' % (img, '%s.txt' % nome), beta, delimiter='\t')
+	# numpy.savetxt('x_fil.txt', x)
+	# exporter.params['width'] = 1024
+	# grafico.plot(x, y[0][:, 224], name='224', pen=(2,2))
+	#grafico1.setLabels(title='Fluorescência Assintomatica', left='Intensidade', bottom='Comprimento de onda')
+	# grafico.setLabel('left', "Intensidade", units='arb. units')
+	# grafico.setLabel('bottom', "Comprimento de Onda", units='nm')
+	return 0
 
 if __name__ == '__main__':
-    import sys
-    sys.exit(main(sys.argv))
+	import sys
+	sys.exit(main(sys.argv))

@@ -24,8 +24,7 @@ import sys; sys.dont_write_bytecode = True # não gera arquivos pyc
 import os
 import pandas
 import numpy
-import glob
-
+from sklearn.cross_decomposition import PLSRegression
 
 # Carrega arquivos de acordo com uma configuração de pastas retornando uma matrix onde as colunas são as intensidades dos espectros
 def Carrega_Arquivos(caminho, inicio_linea):
@@ -85,12 +84,12 @@ def Offset(y, valor_y=0):
 def Produto_Scalar(y, yref):
 	norm_ym = numpy.linalg.norm(yref)
 	norm_y = numpy.linalg.norm(y)
-	if y.shape[0] == yref.shape[0] or y.shape[1] == yref.shape[1]:
-		costheta = y.dot(yref.transpose()) / (norm_y * norm_ym)
-		return costheta
-	elif y.shape[0] == yref.shape[1] or y.shape[1] == yref.shape[0]:
-		costheta = y.dot(yref) / (norm_y * norm_ym)
-		return costheta
+	if y.shape[0] > y.shape[1]:
+		y = y.T
+	if yref.shape[0] < yref.shape[1]:
+		yref = yref.T
+	costheta = y.dot(yref) / (norm_y * norm_ym)
+	return costheta
 
 # função que normaliza utlizandando a area embaixo da curva
 def Normaliza(y, x=None):
@@ -151,3 +150,93 @@ def Identifica_Agrup(caminho):
 		folhas.append(nf)
 	return folhas
 
+def importa_dados(caminho):
+	amostras = os.listdir(caminho)
+	amostras.sort()
+	matrix = []
+	for i in amostras:
+		Dados = pandas.read_csv('%s/%s' % (caminho, i), sep='\t', header=None)
+		matrix.append(numpy.array(Dados))
+	return matrix
+
+#preciso melhorar esta função
+def importa_excel(sheet):
+	xl = pandas.ExcelFile('/home/willy/Documents/Novo_Conj_Dados/Agrupados/teste.xls', skiprows=1, header=None)
+	df = xl.parse('%s' % sheet)
+	matrix = [[]]*3
+	matrix[1] = numpy.array(df)[:, 6:8].T
+	matrix[0] = numpy.array(df)[:, 15:17].T
+	matrix[2] = numpy.array(df)[:, 24:].T
+	return matrix
+
+def Predicao_python(conj_test, modelo, referencia, n_component):
+	pls = PLSRegression(n_component).fit(modelo, referencia)
+	pls.coef_
+	pred = pls.predict(conj_test)
+	return pred
+
+
+#Constroi o beta apartir de um conjunto de teinamento para depois jogar na função pedriction
+def beta(modelo, referencia, n_component):
+	pls = PLSRegression(n_component, scale=False).fit(modelo, referencia)
+	pls.coef_
+	fit_intercept = pls.y_mean_ - numpy.dot(pls.x_mean_, pls.coef_)
+	fit_coef = pls.coef_
+	beta = numpy.row_stack((fit_intercept, fit_coef))
+	return beta
+
+#baseado ao beta gerado tanto no matlab quanto no proprio PySpectrum retorna a matrix confução do conjunto de teste
+def Prediction(beta, amostras):
+	matrix = []
+	temp = []
+	for k in range(len(amostras)):
+		amostras[k] = amostras[k][2:, :]
+		amostras[k] = numpy.vstack(([1]*amostras[k].shape[1], amostras[k]))
+		amostras[k] = amostras[k].T
+		for i in range(len(beta)):
+			for j in range(amostras[k].shape[0]):
+				if j == 0:
+					pred = numpy.dot(amostras[k][j, :], beta[i])
+				else:
+					pred = numpy.row_stack((pred, numpy.dot(amostras[k][j, :], beta[i])))
+			if i == 0:
+				temp = numpy.array(pred)
+			else:
+				temp = numpy.column_stack((temp, numpy.array(pred)))
+		matrix.append(temp)
+	Assintomatica = 0
+	Sadia = 0
+	Sintomatica = 0
+	resultado = [[]]*len(matrix)
+	for i in range(len(matrix)):
+		for j in range(matrix[i].shape[0]):
+			if matrix[i][j, 0] > matrix[i][j, 1] and matrix[i][j, 0] > matrix[i][j, 2]:
+				Assintomatica += 1
+			elif matrix[i][j, 1] > matrix[i][j, 0] and matrix[i][j, 1] > matrix[i][j, 2]:
+				Sadia += 1
+			elif matrix[i][j, 2] > matrix[i][j, 0] and matrix[i][j, 2] > matrix[i][j, 1]:
+				Sintomatica += 1
+		resultado[i] = numpy.column_stack((Sadia, Assintomatica, Sintomatica))
+		Assintomatica = 0
+		Sadia = 0
+		Sintomatica = 0
+	return matrix, resultado
+
+def matrix_conf(matrix):
+	Assintomatica = 0
+	Sadia = 0
+	Sintomatica = 0
+	resultado = [[]] * len(matrix)
+	for i in range(len(matrix)):
+		for j in range(matrix[i].shape[0]):
+			if matrix[i][j, 0] > matrix[i][j, 1] and matrix[i][j, 0] > matrix[i][j, 2]:
+				Assintomatica += 1
+			elif matrix[i][j, 1] > matrix[i][j, 0] and matrix[i][j, 1] > matrix[i][j, 2]:
+				Sadia += 1
+			elif matrix[i][j, 2] > matrix[i][j, 0] and matrix[i][j, 2] > matrix[i][j, 1]:
+				Sintomatica += 1
+		resultado[i] = numpy.column_stack((Sadia, Assintomatica, Sintomatica))
+		Assintomatica = 0
+		Sadia = 0
+		Sintomatica = 0
+	return resultado
