@@ -27,38 +27,39 @@ import pyqtgraph as pg
 import pyqtgraph.exporters
 from Functions import functions_Fil as fs
 from Functions import gera_arff as ga
+import matplotlib.pyplot as plt
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 #from Functions import *
 
 def main(args):
-	# fc = '/home/willy/Documents/Novo_Conj_Dados/Mensal/12_04_2018/Folhas'
+	# fc = '/home/willy/Documents/Novo_Conj_Dados/Mensal/29_03_2018/Folhas'
 	fc = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/folhas_p'
-	w = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/Calculo_Beta2/weka'
-	img = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/Calculo_Beta2/Imagens'
+	w = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/TesteOutliers/weka'
+	img = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/TesteOutliers/Imagens'
 	cy1 = '/home/willy/PycharmProjects/YMedios_Eq.txt'
 	cy3 = "/home/willy/PycharmProjects/YMedios_FIL.txt"
 	nome1 = 'EQ1'
 	nome2 = 'EQ2'
 	nome3 = 'FIL'
-	sheet1 = 'Teste_EQ1'
-	sheet2 = 'Teste_EQ2'
-	sheet3 = 'Teste_FIL'
-	# sheet1 = 'Beta_EQ1'
-	# sheet2 = 'Beta_EQ2'
-	# sheet3 = 'Beta_FIL'
-	# c1 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/12_04_2018/Equipamentos/Eq_1_MMO_12_04_2018'
+	# sheet1 = 'Teste_EQ1'
+	# sheet2 = 'Teste_EQ2'
+	# sheet3 = 'Teste_FIL'
+	sheet1 = 'Beta_EQ1'
+	sheet2 = 'Beta_EQ2'
+	sheet3 = 'Beta_FIL'
+	# c1 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/29_03_2018/Equipamentos/Eq_1_MMO_29_03_2018'
 	# c2 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/29_03_2018/Equipamentos/Eq_2_MMO_29_03_2018'
 	# c3 = '/home/willy/Documents/Novo_Conj_Dados/Mensal/29_03_2018/Fil/FIL_Citrosuco_29_03_2018'
-	#
+
 
 	c1 = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/EQ1_p'
 	c2 = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/EQ2_p'
 	c3 = '/home/willy/Documents/Novo_Conj_Dados/Agrupados/FIL_p'
 
 
-	cym = cy3
+	# cym = cy1
 	indice = 3
 	
 	Sheet = sheet3
@@ -68,13 +69,15 @@ def main(args):
 	nomeimg2 = "fAssintomatica"
 	nomeimg3 = "fSintomatica"
 	
-	ind_beta = 0
 	
-	
-	ym = pandas.read_csv('%s' % cym, '\t', header=None)
-	ymedio = numpy.array(ym)
-	# print(ymedio, ym)
-	
+	# Indice para teste
+	ind_beta = 2
+
+
+	# ym = pandas.read_csv('%s' % cym, '\t', header=None)
+	# ymedio = numpy.array(ym)
+	# # print(ymedio, ym)
+
 	x, m = fs.Carrega_Arquivos(caminho, 1)
 
 	#Corte Equipamento1
@@ -111,8 +114,71 @@ def main(args):
 	for i in range(len(y)):
 		Y[i] = numpy.vstack((folhas[i], y[i]))
 
+	print(Y[0].shape, Y[1].shape, Y[2].shape)
+	
+	# matrix = [[]]*3
+	# #matriz de produto scalar
+	# for k in range(len(Y)):
+	# 	m_temp = []
+	# 	for i in range(Y[k].shape[1]):
+	# 		for j in range(Y[k].shape[1]):
+	# 			if j == 0:
+	# 				m_temp = numpy.array(fs.Produto_Scalar(Y[k][2:, i], Y[k][2:, j]))
+	# 				# print(m_temp)
+	# 			else:
+	# 				m_temp = numpy.column_stack((m_temp, fs.Produto_Scalar(Y[k][2:, i], Y[k][2:, j])))
+	# 				# print(m_temp)
+	# 		if i == 0:
+	# 			tp = m_temp
+	# 		else:
+	# 			tp = numpy.vstack((tp, m_temp))
+	# 	# print(tp.shape)
+	# 	matrix[k] = tp
+	#
+	# print(len(matrix))
+	
+	# h = [[]]*len(matrix)
+	# for i in range(len(matrix)):
+	# 	h[i] = (sum(matrix[i])-1)/(matrix[i].shape[0] - 1)
+	#
+	# print(h[0].shape)
+	# print(h[0].shape, h[1].shape, h[2].shape)
+	
+	# plt.hist(matrix[0], bins='auto')
+	# plt.show()
+	# plt.hist(matrix[1], bins='auto')
+	# plt.show()
+	# plt.hist(matrix[2], bins='auto')
+	# plt.show()
+	
+	# for i in range(len(h)):
+	# 	if i == 0:
+	# 		h[i] = fs.remove_outliers(h[i], 0.989)
+	# 		Y[i] = numpy.delete(Y[i], h[i], 1)
+	# 	elif i == 1:
+	# 		h[i] = fs.remove_outliers(h[i], 0.997)
+	# 		Y[i] = numpy.delete(Y[i], h[i], 1)
+	# 	elif i == 2:
+	# 		h[i] = fs.remove_outliers(h[i], 0.981)
+	# 		Y[i] = numpy.delete(Y[i], h[i], 1)
+	#
 	# print(Y[0].shape, Y[1].shape, Y[2].shape)
-
+	
+	
+	
+	# a = numpy.array([[1], [2], [3], [4]])
+	# c = numpy.array([[1], [2], [3], [4]])
+	# b = a.T
+	# f = a.T
+	# print(a.shape, b.shape)
+	# print(a, b)
+	# print(f, b)
+	# d = fs.Produto_Scalar(b, a)
+	# print(d.shape)
+	#
+	
+	
+	
 	# #remove outliers
 	# for i in range(len(y)):
 	# 	cont = 0
@@ -197,8 +263,8 @@ def main(args):
 	# print(Y[1].shape[0], Y[0].shape[0], Y[2].shape[0])
 	# print(((resultado[1]/Y[1].shape[0])*100).round(2), ((resultado[0]/Y[0].shape[0])*100).round(2), ((resultado[2]/Y[2].shape[0])*100).round(2))
 
-	#
-	# amostras = fs.importa_dados('/home/willy/Desktop/Betas/amostras')
+
+	# amostras = fs.importa_dados('/home/willy/Desktop/Modelo_Scale/5plantas')
 	# N = amostras[ind_beta].shape[0]//3
 	# # print(amostras[ind_beta].shape[0]//3)
 	# refencia = [[]]*3
@@ -209,46 +275,46 @@ def main(args):
 	#
 	#
 	# #cria os betas
-	# beta2 = []
+	# beta = []
 	# for i in range(len(refencia)):
-	# 	Beta_temp2 = fs.beta(amostras[ind_beta], refencia[i], 7)
-	# 	beta2.append(Beta_temp2)
+	# 	Beta_temp = fs.beta(amostras[ind_beta], refencia[i], 8)
+	# 	beta.append(Beta_temp)
 	# # print(beta2[0].shape, beta2[1].shape, beta2[2].shape)
 	#
-	# teste, resultado2 = fs.Prediction(beta2, Y)
+	# teste, resultado = fs.Prediction(beta, Y)
 	# # print(teste[0], teste[1], teste[2])
-	# print(resultado2[1], resultado2[0], resultado2[2])
+	# print(resultado[1], resultado[0], resultado[2])
 	# # print(Y[1].shape[0], Y[0].shape[0], Y[2].shape[0])
-	# print(((resultado2[1]/Y[1].shape[0])*100).round(2), ((resultado2[0]/Y[0].shape[0])*100).round(2), ((resultado2[2]/Y[2].shape[0])*100).round(2))
+	# print(((resultado[1]/Y[1].shape[0])*100).round(2), ((resultado[0]/Y[0].shape[0])*100).round(2), ((resultado[2]/Y[2].shape[0])*100).round(2))
 	#
 	#
 	#
 	# for i in range(len(Y)):
 	# 	Y[i] = Y[i][:, 1:]
-	# 	# Y[i] = Y[i].T
+	#
 	#
 	# # print(Y[0].shape, Y[1].shape, Y[2].shape)
 	# print('---------------')
 	#
-	# beta = []
+	# beta2 = []
 	#
 	# for i in range(len(Y)):
 	# 	for j in range(len(refencia)):
 	# 		if j == 0:
-	# 			pred = fs.Predicao_python(Y[i], amostras[ind_beta], refencia[j], 7)
+	# 			pred = fs.Predicao_python(Y[i], amostras[ind_beta], refencia[j], 8)
 	# 		else:
-	# 			pred = numpy.column_stack((pred, fs.Predicao_python(Y[i], amostras[ind_beta], refencia[j], 7)))
-	# 	beta.append(pred)
+	# 			pred = numpy.column_stack((pred, fs.Predicao_python(Y[i], amostras[ind_beta], refencia[j], 8)))
+	# 	beta2.append(pred)
 	#
-	# resultado = fs.matrix_conf(beta)
-	# print(resultado[1], resultado[0], resultado[2])
-	# print(((resultado[1] / Y[1].shape[0]) * 100).round(2), ((resultado[0] / Y[0].shape[0]) * 100).round(2), ((resultado[2] / Y[2].shape[0]) * 100).round(2))
+	# resultado2 = fs.matrix_conf(beta2)
+	# print(resultado2[1], resultado2[0], resultado2[2])
+	# print(((resultado2[1] / Y[1].shape[0]) * 100).round(2), ((resultado2[0] / Y[0].shape[0]) * 100).round(2), ((resultado2[2] / Y[2].shape[0]) * 100).round(2))
 	# # print(beta[0][0].shape, beta[1][1].shape, beta[2][2].shape)
 	# # # print(beta[0], beta[1], beta[2])
 	# # print(len(beta))
 	# # print(beta)
 	#
-	
+	#
 	
 	# beta = Y[1][2:, :].T #numpy.vstack((Y[0][2:, :].T, Y[1][2:, :].T, Y[2][2:, :].T))
 	# numpy.savetxt('%s/''%s' % (img, '%s.txt' % nome), beta, delimiter='\t')

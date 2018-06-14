@@ -69,6 +69,10 @@ def Corte(x, x1, x2):
 	ind = numpy.nonzero((x > x1) & (x < x2))
 	return ind
 
+def remove_outliers(y, ref):
+	ind = numpy.nonzero(y < ref)
+	return ind
+
 # Função encarregada de remover offset pegando um valor minimo do espectro automaticamente ou fornecendo um valor minimo
 def Offset(y, valor_y=0):
 	Y = numpy.zeros_like(y)
@@ -84,11 +88,7 @@ def Offset(y, valor_y=0):
 def Produto_Scalar(y, yref):
 	norm_ym = numpy.linalg.norm(yref)
 	norm_y = numpy.linalg.norm(y)
-	if y.shape[0] > y.shape[1]:
-		y = y.T
-	if yref.shape[0] < yref.shape[1]:
-		yref = yref.T
-	costheta = y.dot(yref) / (norm_y * norm_ym)
+	costheta = numpy.array(numpy.dot(y, yref) / (norm_y * norm_ym))
 	return costheta
 
 # função que normaliza utlizandando a area embaixo da curva
@@ -169,32 +169,6 @@ def importa_excel(sheet):
 	matrix[2] = numpy.array(df)[:, 24:].T
 	return matrix
 
-def Predicao_python(conj_test, modelo, referencia, n_component):
-	pls = PLSRegression(n_component).fit(modelo, referencia)
-	pls.coef_
-	pred = pls.predict(conj_test)
-	return pred
-
-
-def matrix_conf(matrix):
-	Assintomatica = 0
-	Sadia = 0
-	Sintomatica = 0
-	resultado = [[]] * len(matrix)
-	for i in range(len(matrix)):
-		for j in range(matrix[i].shape[0]):
-			if matrix[i][j, 0] > matrix[i][j, 1] and matrix[i][j, 0] > matrix[i][j, 2]:
-				Assintomatica += 1
-			elif matrix[i][j, 1] > matrix[i][j, 0] and matrix[i][j, 1] > matrix[i][j, 2]:
-				Sadia += 1
-			elif matrix[i][j, 2] > matrix[i][j, 0] and matrix[i][j, 2] > matrix[i][j, 1]:
-				Sintomatica += 1
-		resultado[i] = numpy.column_stack((Sadia, Assintomatica, Sintomatica))
-		Assintomatica = 0
-		Sadia = 0
-		Sintomatica = 0
-	return resultado
-
 #Constroi o beta apartir de um conjunto de teinamento para depois jogar na função pedriction
 def beta(modelo, referencia, n_component):
 	pls = PLSRegression(n_component, scale=False).fit(modelo, referencia)
@@ -240,3 +214,29 @@ def Prediction(beta, amostras):
 		Sadia = 0
 		Sintomatica = 0
 	return matrix, resultado
+
+def Predicao_python(conj_test, modelo, referencia, n_component):
+	pls = PLSRegression(n_component, scale=False).fit(modelo, referencia)
+	pls.coef_
+	pred = pls.predict(conj_test)
+	return pred
+
+
+def matrix_conf(matrix):
+	Assintomatica = 0
+	Sadia = 0
+	Sintomatica = 0
+	resultado = [[]] * len(matrix)
+	for i in range(len(matrix)):
+		for j in range(matrix[i].shape[0]):
+			if matrix[i][j, 0] > matrix[i][j, 1] and matrix[i][j, 0] > matrix[i][j, 2]:
+				Assintomatica += 1
+			elif matrix[i][j, 1] > matrix[i][j, 0] and matrix[i][j, 1] > matrix[i][j, 2]:
+				Sadia += 1
+			elif matrix[i][j, 2] > matrix[i][j, 0] and matrix[i][j, 2] > matrix[i][j, 1]:
+				Sintomatica += 1
+		resultado[i] = numpy.column_stack((Sadia, Assintomatica, Sintomatica))
+		Assintomatica = 0
+		Sadia = 0
+		Sintomatica = 0
+	return resultado
