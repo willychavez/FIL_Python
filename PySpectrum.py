@@ -29,7 +29,7 @@ from Functions import functions_Fil as fs
 from Functions import gera_arff as ga
 import matplotlib.pyplot as plt
 pg.setConfigOption('background', 'w')
-pg.setConfigOption('foreground', 'k')
+pg.setConfigOption('foreground', 'r')
 
 #from Functions import *
 
